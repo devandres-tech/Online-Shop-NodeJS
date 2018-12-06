@@ -1,1 +1,1 @@
-# A simple application that ues NodeJS 
+# A simple application that uses NodeJS 
