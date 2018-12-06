@@ -4,12 +4,12 @@ const express = require("express");
 const bodyParser = require("body-parser");
 
 const app = express();
-// tell express we want to compile dynamic content 
+// register our ejs view engine 
 app.set('view engine', 'ejs'); 
 // tell express where to find them 
 app.set('views', 'views'); 
 
-const adminData = require("./routes/admin");
+const adminRoutes = require("./routes/admin");
 const shopRoutes = require("./routes/shop");
 
 // used to parse the body of incoming request 
@@ -19,12 +19,12 @@ app.use(express.static(path.join(__dirname, 'public')));
  
 // Adding our admin routes as middleware 
 // adding a base route segment to all of our adminRoutes 
-app.use('/admin', adminData.routes); 
+app.use('/admin', adminRoutes); 
 app.use(shopRoutes); 
 
 // handling a 404 route --> catch all route 
 app.use((req, res, next) => {
- res.status(404).render('404', {pageTitle: 'Page Not Found'}); 
+ res.status(404).render('404', {pageTitle: 'Page Not Found', path: "/"}); 
 }); 
 
 // create server and listen on port 3000
