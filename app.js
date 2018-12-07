@@ -1,7 +1,7 @@
 const path = require("path");
-
 const express = require("express");
 const bodyParser = require("body-parser");
+const errorController = require("./controllers/error"); 
 
 const app = express();
 // register our ejs view engine 
@@ -23,9 +23,9 @@ app.use('/admin', adminRoutes);
 app.use(shopRoutes); 
 
 // handling a 404 route --> catch all route 
-app.use((req, res, next) => {
- res.status(404).render('404', {pageTitle: 'Page Not Found', path: "/"}); 
-}); 
+app.use(errorController.get404); 
 
 // create server and listen on port 3000
 app.listen(3000); 
+
+
