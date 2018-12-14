@@ -1,14 +1,15 @@
-
+// Data base connection 
 const getDb = require('../util/database').getDb; 
 const mongodb = require('mongodb'); 
 
 class Product {
-  constructor(title, imageUrl, description, price, id) {
+  constructor(title, imageUrl, description, price, id, userId) {
     this.title = title; 
     this.price = price; 
     this.description = description; 
     this.imageUrl = imageUrl; 
-    this._id = id; 
+    this._id = id ? new mongodb.ObjectId(id) : null; 
+    this.userId = userId; 
   }
 
   save() {
@@ -17,7 +18,7 @@ class Product {
     if (this._id) {
       // Update product if already in database 
       dbOperation = db.collection('products')
-        .updateOne({_id: new mongodb.ObjectId(this._id)}, {$set: this}); 
+        .updateOne({_id: this._id}, {$set: this}); 
     } else {
       // else create new one if not in database 
       dbOperation = db.collection('products').insertOne(this); 
@@ -58,6 +59,17 @@ class Product {
         console.log(err); 
       })
   }
-}
+
+  static deleteById(prodId) {
+    const db = getDb(); 
+    return db.collection('products').deleteOne({ _id: new mongodb.ObjectId(prodId) })
+      .then(result => {
+        console.log('Item deleted!'); 
+      })
+      .catch(err => {
+        console.log(err); 
+      }); 
+  }
+} // End Product class 
 
 module.exports = Product; 

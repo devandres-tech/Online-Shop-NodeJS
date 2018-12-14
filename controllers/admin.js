@@ -1,7 +1,4 @@
 const Product = require("../models/product"); 
-const mongodb = require('mongodb'); 
-
-const ObjectId = mongodb.ObjectId; 
 
 exports.getAddProduct = (req, res, next) => {
   res.render('admin/edit-product', {
@@ -17,7 +14,7 @@ exports.postAddProducts = (req, res, next) => {
   const imageUrl = req.body.imageUrl; 
   const price = req.body.price; 
   const description = req.body.description; 
-  const product = new Product(title, imageUrl, description, price);
+  const product = new Product(title, imageUrl, description, price, null, req.user._id);
   product
     .save()
     .then(result => {
@@ -63,7 +60,8 @@ exports.postEditProduct = (req, res, next) => {
     updatedImageUrl, 
     updatedDesc, 
     updatedPrice,
-    new ObjectId(prodId)); 
+    prodId
+  ); 
 
   product
   .save()
@@ -86,9 +84,15 @@ exports.getProducts = (req, res, next) => {
     .catch(err => console.log(err)); 
 }
 
-// exports.postDeleteProduct = (req, res, next) => {
-//   // Getting Id from request 
-//   const prodId = req.body.productId; 
-//   Product.deleteById(prodId); 
-//   res.redirect('/admin/products'); 
-// }
+exports.postDeleteProduct = (req, res, next) => {
+  // Getting Id from request 
+  const prodId = req.body.productId; 
+  Product.deleteById(prodId)
+    .then(() => {
+      console.log("ITEM REMOVED FROM DATABASE"); 
+      res.redirect('/admin/products'); 
+    })
+    .catch(err => {
+      console.log(err); 
+    })
+}

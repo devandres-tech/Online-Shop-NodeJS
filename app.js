@@ -3,6 +3,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const errorController = require("./controllers/error"); 
 const mongoConnect = require('./util/database').mongoConnect; 
+const User = require('./models/user'); 
 
 const app = express();
 // register our ejs view engine 
@@ -19,7 +20,12 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.use(express.static(path.join(__dirname, 'public')));   
  
 app.use((req, res, next) => {
-  next(); 
+  User.findById("5c12d49b51587c070219efdf")
+    .then(user => {
+      req.user = new User(user.name, user.email, user.cart, user._id);
+      next();
+    })
+    .catch(err => console.log(err)); 
 })
 
 // Adding our admin routes as middleware 
@@ -32,5 +38,6 @@ app.use(errorController.get404);
 
 // Get access to the client from mongo 
 mongoConnect((client) => {
+  
   app.listen(4000); 
 }); 

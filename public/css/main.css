@@ -23,6 +23,14 @@ form {
   text-align: center;
 }
 
+.image {
+  height: 20rem;
+}
+
+.image img {
+  height: 100%;
+}
+
 .main-header {
   width: 100%;
   height: 3.5rem;
@@ -197,6 +205,17 @@ form {
   color: white;
 }
 
+.btn.danger {
+  color: red;
+  border-color: red;
+}
+
+.btn.danger:hover,
+.btn.danger:active {
+  background: red;
+  color: white;
+}
+
 @media (min-width: 768px) {
   .main-header__nav {
     display: flex;
@@ -205,16 +224,4 @@ form {
   #side-menu-toggle {
     display: none;
   }
-}
-
-.detail__image {
-  width: 25rem;
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.detail__image > img {
-  width: 100%;
-
 }
