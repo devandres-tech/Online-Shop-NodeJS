@@ -2,8 +2,9 @@ const path = require("path");
 const express = require("express");
 const bodyParser = require("body-parser");
 const errorController = require("./controllers/error"); 
-const mongoConnect = require('./util/database').mongoConnect; 
 const User = require('./models/user'); 
+const mongoose = require('mongoose'); 
+
 
 const app = express();
 // register our ejs view engine 
@@ -20,9 +21,9 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.use(express.static(path.join(__dirname, 'public')));   
  
 app.use((req, res, next) => {
-  User.findById("5c12d49b51587c070219efdf")
+  User.findById("5c1426769b421f5330d6136c")
     .then(user => {
-      req.user = new User(user.name, user.email, user.cart, user._id);
+      req.user = user;
       next();
     })
     .catch(err => console.log(err)); 
@@ -36,8 +37,26 @@ app.use(shopRoutes);
 // handling a 404 route --> catch all route 
 app.use(errorController.get404); 
 
-// Get access to the client from mongo 
-mongoConnect((client) => {
-  
-  app.listen(4000); 
-}); 
+
+
+// Get access to the client with mongoose
+mongoose.connect(
+  "mongodb+srv://Andres:Barcelona10@cluster0-3lj5r.mongodb.net/shop?retryWrites=true"
+).then(res => {
+  User.findOne().then(user => {
+    if (!user) {
+      const user = new User({
+        name: "Andres",
+        email: "andres@test.com",
+        cart: {
+          items: []
+        }
+      });
+      user.save();  
+    }
+  }); 
+  console.log("Connected to database successfully"); 
+  app.listen(3000); 
+}).catch(err => {
+  console.log(err); 
+});
