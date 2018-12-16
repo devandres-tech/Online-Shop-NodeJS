@@ -4,9 +4,14 @@ const bodyParser = require("body-parser");
 const errorController = require("./controllers/error"); 
 const User = require('./models/user'); 
 const mongoose = require('mongoose'); 
-
+const session = require('express-session'); 
+const MongoDBStore = require('connect-mongodb-session')(session); 
 
 const app = express();
+const store = new MongoDBStore({
+  uri: MONGODB_URI, 
+  collection: 'sessions'
+}); 
 // register our ejs view engine 
 app.set('view engine', 'ejs'); 
 // tell express where to find them 
@@ -14,25 +19,39 @@ app.set('views', 'views');
 
 const adminRoutes = require("./routes/admin");
 const shopRoutes = require("./routes/shop");
+const authRoutes = require("./routes/auth");
 
 // used to parse the body of incoming request 
 app.use(bodyParser.urlencoded({extended: false}));
 // serving static files --> request css
 app.use(express.static(path.join(__dirname, 'public')));   
- 
+app.use(
+  session({
+    secret: 'my secret',
+    resave: false,
+    saveUninitialized: false, 
+    store: store
+    })
+); 
+
 app.use((req, res, next) => {
-  User.findById("5c1426769b421f5330d6136c")
+  if (!req.session.user) {
+    return next(); 
+  }
+  User.findById(req.session.user._id)
     .then(user => {
-      req.user = user;
+      req.user = user; 
       next();
     })
-    .catch(err => console.log(err)); 
-})
+    .catch(err => console.log(err));   
+}); 
+ 
 
 // Adding our admin routes as middleware 
 // adding a base route segment to all of our adminRoutes 
 app.use('/admin', adminRoutes); 
 app.use(shopRoutes); 
+app.use(authRoutes); 
 
 // handling a 404 route --> catch all route 
 app.use(errorController.get404); 
@@ -41,7 +60,7 @@ app.use(errorController.get404);
 
 // Get access to the client with mongoose
 mongoose.connect(
-  "mongodb+srv://Andres:Barcelona10@cluster0-3lj5r.mongodb.net/shop?retryWrites=true"
+  MONGODB_URI
 ).then(res => {
   User.findOne().then(user => {
     if (!user) {
