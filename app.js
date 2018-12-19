@@ -7,6 +7,7 @@ const mongoose = require('mongoose');
 const session = require('express-session'); 
 const MongoDBStore = require('connect-mongodb-session')(session); 
 
+const MONGODB_URI = 'mongodb+srv://Andres:Barcelona10@cluster0-3lj5r.mongodb.net/shop'; 
 const app = express();
 const store = new MongoDBStore({
   uri: MONGODB_URI, 
@@ -57,23 +58,10 @@ app.use(authRoutes);
 app.use(errorController.get404); 
 
 
-
 // Get access to the client with mongoose
 mongoose.connect(
   MONGODB_URI
-).then(res => {
-  User.findOne().then(user => {
-    if (!user) {
-      const user = new User({
-        name: "Andres",
-        email: "andres@test.com",
-        cart: {
-          items: []
-        }
-      });
-      user.save();  
-    }
-  }); 
+).then(result => {
   console.log("Connected to database successfully"); 
   app.listen(3000); 
 }).catch(err => {
