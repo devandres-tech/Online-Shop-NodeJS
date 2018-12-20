@@ -6,6 +6,8 @@ const User = require('./models/user');
 const mongoose = require('mongoose'); 
 const session = require('express-session'); 
 const MongoDBStore = require('connect-mongodb-session')(session); 
+const csrf = require('csurf'); // used to protect our views 
+const flash = require('connect-flash'); 
 
 const MONGODB_URI = 'mongodb+srv://Andres:Barcelona10@cluster0-3lj5r.mongodb.net/shop'; 
 const app = express();
@@ -13,6 +15,7 @@ const store = new MongoDBStore({
   uri: MONGODB_URI, 
   collection: 'sessions'
 }); 
+const csurfProtection = csrf(); 
 // register our ejs view engine 
 app.set('view engine', 'ejs'); 
 // tell express where to find them 
@@ -34,6 +37,8 @@ app.use(
     store: store
     })
 ); 
+app.use(csurfProtection); 
+app.use(flash());
 
 app.use((req, res, next) => {
   if (!req.session.user) {
@@ -46,7 +51,13 @@ app.use((req, res, next) => {
     })
     .catch(err => console.log(err));   
 }); 
- 
+
+app.use((req, res, next) => {
+  // Set variables for our views 
+  res.locals.isAuthenticated = req.session.isLoggedIn; 
+  res.locals.csrfToken = req.csrfToken(); 
+  next(); 
+}); 
 
 // Adding our admin routes as middleware 
 // adding a base route segment to all of our adminRoutes 

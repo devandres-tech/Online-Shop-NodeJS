@@ -3,18 +3,30 @@ const bcrypt = require('bcryptjs');
 
 
 exports.getLogin = (req, res, next) => {
+  let message = req.flash('error'); 
+  if (message.length > 0) {
+    message = message[0]; 
+  } else {
+    message = null; 
+  }
   res.render("auth/login", {
     path: "/login",
     pageTitle: "Login",
-    isAuthenticated: false
+    errorMessage : message
   }); 
 }
 
 exports.getSignup = (req, res, next) => {
+  let message = req.flash('error');
+  if (message.length > 0) {
+    message = message[0];
+  } else {
+    message = null;
+  }
   res.render("auth/signup", {
     path: "/signup",
     pageTitle: "Signup",
-    isAuthenticated: false
+    errorMessage: message
   });
 };
 
@@ -24,6 +36,7 @@ exports.postLogin = (req, res, next) => {
   User.findOne({email: email})
     .then(user => {
       if (!user) {
+        req.flash('error', 'Invalid email or password!'); // flash error
         return res.redirect('/login'); 
       }
       // Validate password if user exits 
@@ -37,6 +50,7 @@ exports.postLogin = (req, res, next) => {
               res.redirect("/");
             }); 
           }
+          req.flash("error", "Invalid email or password!");
           res.redirect('/login'); 
         })
         .catch(err => {
@@ -54,6 +68,7 @@ exports.postSignup = (req, res, next) => {
   User.findOne({email: email})
     .then(userObj => {
       if (userObj) {
+        req.flash("error", "Email exists already!");
         return res.redirect('/signup'); 
       }
       // Hashing a password returns a promise 
@@ -74,7 +89,7 @@ exports.postSignup = (req, res, next) => {
 };
 
 exports.postLogout = (req, res, next) => {
-  // Clear session 
+  // Clear session after logging out 
   req.session.destroy(err => {
     console.log(err); 
     res.redirect('/'); 
