@@ -64,21 +64,25 @@ exports.postEditProduct = (req, res, next) => {
   const updatedDesc = req.body.description; 
 
   Product.findById(prodId).then(product => {
+    if (product.userId.toString() !== req.user._id.toString()) {
+      return res.redirect("/");
+    }
     product.title = updatedTitle; 
     product.price = updatedPrice; 
     product.description = updatedDesc; 
     product.imageUrl = updatedImageUrl; 
     return product.save()
-  }) // redirect back when saving is done 
-  .then(result => {
-      console.log('Updated product!'); 
-      res.redirect('/admin/products'); 
+      .then(result => {
+        console.log('Updated product!');
+        res.redirect('/admin/products');
     })
-    .catch(err => console.log(err)); 
+  }) // redirect back when saving is done 
+  .catch(err => console.log(err)); 
 }; 
 
 exports.getProducts = (req, res, next) => {
-  Product.find()
+  // Restricting access for authorized users only 
+  Product.find({userId: req.user._id})
     .then(products => {
       console.log(products);
       res.render("admin/products", {
@@ -93,7 +97,7 @@ exports.getProducts = (req, res, next) => {
 exports.postDeleteProduct = (req, res, next) => {
   // Getting Id from request 
   const prodId = req.body.productId; 
-  Product.findByIdAndRemove(prodId)
+  Product.deleteOne({_id: prodId, userId: req.user._id})
     .then(() => {
       console.log("ITEM REMOVED FROM DATABASE"); 
       res.redirect('/admin/products'); 
