@@ -203,6 +203,15 @@ form {
   margin: 0 0.25rem;
 }
 
+.detail__image {
+  width: 40rem;
+  margin: 0 auto;
+}
+
+.detail__image img {
+  width: 100%;
+}
+
 .btn {
   display: inline-block;
   padding: 0.25rem 1rem;
