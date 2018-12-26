@@ -9,7 +9,6 @@ const MongoDBStore = require('connect-mongodb-session')(session);
 const csrf = require('csurf'); // used to protect our views 
 const flash = require('connect-flash'); 
 
-const MONGODB_URI = 'mongodb+srv://Andres:Barcelona10@cluster0-3lj5r.mongodb.net/shop'; 
 const app = express();
 const store = new MongoDBStore({
   uri: MONGODB_URI, 
