@@ -8,12 +8,31 @@ const session = require('express-session');
 const MongoDBStore = require('connect-mongodb-session')(session); 
 const csrf = require('csurf'); // used to protect our views 
 const flash = require('connect-flash'); 
+const multer = require('multer'); 
 
 const app = express();
 const store = new MongoDBStore({
   uri: MONGODB_URI, 
   collection: 'sessions'
 }); 
+const fileStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'images'); 
+  },
+  filename: (req, file, cb) => {
+    cb(null, new Date().toISOString() + '-' + file.originalname); 
+  }
+}); 
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype === 'image/png' || 
+    file.mimetype === 'image/jpg' || 
+    file.mimetype === 'image/jpeg'
+  ) {
+    cb(null, true); 
+  } else {
+    cb(null, false); 
+  }
+}
 const csurfProtection = csrf(); 
 // register our ejs view engine 
 app.set('view engine', 'ejs'); 
@@ -26,8 +45,11 @@ const authRoutes = require("./routes/auth");
 
 // used to parse the body of incoming request 
 app.use(bodyParser.urlencoded({extended: false}));
+// Configure multer --> used to store images 
+app.use(multer({storage: fileStorage, fileFilter: fileFilter}).single('image')); 
 // serving static files --> request css
 app.use(express.static(path.join(__dirname, 'public')));   
+app.use('/images', express.static(path.join(__dirname, 'images')));   
 app.use(
   session({
     secret: 'my secret',

@@ -25,6 +25,7 @@
     "express-validator": "^5.3.0",
     "mongodb": "^3.1.10",
     "mongoose": "^5.4.0",
+    "multer": "^1.4.1",
     "mysql2": "^1.6.4",
     "node": "^11.4.0",
     "nodemailer": "^4.7.0",
