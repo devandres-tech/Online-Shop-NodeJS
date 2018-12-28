@@ -45,7 +45,7 @@ const authRoutes = require("./routes/auth");
 
 // used to parse the body of incoming request 
 app.use(bodyParser.urlencoded({extended: false}));
-// Configure multer --> used to store images 
+// Configure multer --> used to store images from incoming requests 
 app.use(multer({storage: fileStorage, fileFilter: fileFilter}).single('image')); 
 // serving static files --> request css
 app.use(express.static(path.join(__dirname, 'public')));   
