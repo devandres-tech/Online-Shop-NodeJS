@@ -89,7 +89,6 @@ exports.getCart = (req, res, next) => {
   req.user.populate('cart.items.productId')
     .execPopulate()
     .then(user => {
-      console.log(user); 
       const products = user.cart.items;
       res.render("shop/cart", {
         path: "/cart",
@@ -128,10 +127,40 @@ exports.postCartDeleteProduct = (req, res, next) => {
     });
 };
 
-exports.postOrder = (req, res, next) => {
+exports.getCheckout = (req, res, next) => {
   req.user.populate('cart.items.productId')
     .execPopulate()
     .then(user => {
+      const products = user.cart.items;
+      const total = products.reduce((sum, product) => {
+        return sum += product.quantity * product.productId.price; 
+      }, 0)
+      res.render("shop/checkout", {
+        path: "/checkout",
+        pageTitle: "Checkout",
+        products: products, 
+        totalSum: total
+      });
+    })
+    .catch(err => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
+    });
+}
+
+exports.postOrder = (req, res, next) => {
+  /** Getting the strip token from the request body */
+  const token = req.body.stripeToken; 
+  /** Will hold the total amount in US dollars */
+  let totalSum = 0; 
+
+  req.user.populate('cart.items.productId')
+    .execPopulate()
+    .then(user => {
+      user.cart.items.forEach(p => {
+        totalSum += p.quantity * p.productId.price;  
+      }); 
       const products = user.cart.items.map(i => {
         return { quantity: i.quantity, product: { ...i.productId._doc } }
       });
@@ -145,6 +174,14 @@ exports.postOrder = (req, res, next) => {
       return order.save();
     })
     .then(result => {
+      // Send request to stripe 
+      const charge = stripe.charges.create({
+        amount: totalSum * 100,
+        currency: 'usd',
+        description: 'Demo Order',
+        source: token,
+        metadata: {order_id: result._id.toString()}
+      });
       // Clear cart after order was placed
       return req.user.clearCart();
     })
